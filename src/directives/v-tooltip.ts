@@ -7,13 +7,13 @@ const setupTooltip = async (el: any, binding: DirectiveBinding) => {
     return;
   }
 
-  const isContentString = binding.value === 'string';
+  const isContentString = typeof binding.value === 'string';
   const parsed = isContentString ? { content: binding.value } : binding.value;
   const isAlways = !isContentString ? !!binding.value.always : false;
   const options: PopoverProgrammatic = {
     contentClass: 'bg-white border text-sm rounded-md px-2 py-[3px]',
-    offset: 12,
-    arrowSize: 12,
+    offset: 10,
+    arrowSize: 10,
     width: 'max-content',
     ...parsed,
     ...(isAlways ? { closeOutside: false } : {})

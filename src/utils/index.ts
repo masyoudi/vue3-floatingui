@@ -40,3 +40,33 @@ export function omit(source: Record<string, any>, keys: string[]) {
     return prev;
   }, {});
 }
+
+export function scrollIntoView(el: string | HTMLElement, options?: ScrollIntoViewOptions) {
+  return new Promise((resolve) => {
+    const target = el ? (el instanceof HTMLElement ? el : document.querySelector(el)) : null;
+    if (typeof window === 'undefined' || !target) {
+      throw new TypeError('Argument 1 must be an Element');
+    }
+
+    let isEqual = 0;
+    let lastPos: number | null = null;
+    const scrollOptions = Object.assign({ behavior: 'smooth' }, options);
+    const check = () => {
+      const newPos = target.getBoundingClientRect().top;
+
+      if (newPos === lastPos) {
+        if (isEqual++ > 2) {
+          return resolve(true);
+        }
+      } else {
+        isEqual = 0;
+        lastPos = newPos;
+      }
+
+      requestAnimationFrame(check);
+    };
+
+    target.scrollIntoView(scrollOptions);
+    requestAnimationFrame(check);
+  });
+}

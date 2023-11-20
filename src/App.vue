@@ -1,5 +1,17 @@
 <template>
   <div class="relative w-full max-w-7xl mx-auto px-6 py-20">
+    <div class="relative mb-10">
+      <button class="inline-flex justify-center items-center bg-teal-500 text-white rounded-lg px-4 py-2" @click="openTour">
+        Open Tour
+      </button>
+    </div>
+    <div class="relative mb-10">
+      <p>
+        Lorem <span v-tooltip="'Inline tooltip'" class="font-semibold">Inline</span> dolor sit amet consectetur adipisicing elit. Quis expedita at modi
+        quidem! Beatae, voluptas. Rem, laborum quidem. Aliquam assumenda eos eligendi. Assumenda inventore sint repellat, a esse
+        temporibus repudiandae.
+      </p>
+    </div>
     <MenuPopover
       strategy="fixed"
       :shift="{ padding: 12 }"
@@ -69,7 +81,11 @@
     </MenuPopover>
 
     <div v-for="i in 100" :key="i">
-      <p class="mb-4" :data-tours="i">
+      <p
+        class="mb-4"
+        :class="[{ 'fixed bottom-4 left-5 w-[300px]': i === 1 }, { 'border border-slate-300 rounded-lg p-3': i === 2 }]"
+        :data-tour="i"
+      >
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Dolores ratione dolorem ipsam obcaecati dolor, voluptatum ut rem
         porro nisi harum animi aliquam quasi consectetur doloribus blanditiis sapiente saepe maiores provident!
       </p>
@@ -89,21 +105,37 @@
     <div class="flex space-x-3">
       <button
         class="inline-flex justify-center items-center bg-slate-500 text-white rounded-lg px-4 py-2"
-        v-tooltip="{ content: 'Text content' }"
+        v-tooltip="'You can see this content'"
       >
         Hover Tooltip
       </button>
+
+      <button
+        class="inline-flex justify-center items-center bg-slate-500 text-white rounded-lg px-4 py-2"
+        v-tooltip="{
+          content: 'Text content',
+          contentClass: 'bg-emerald-500 text-white px-2 py-0.5 text-sm rounded-md',
+          arrowClass: 'bg-emerald-500',
+          always: true
+        }"
+      >
+        Always Open
+      </button>
     </div>
+    <MenuHighlight ref="tour"></MenuHighlight>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import MenuHighlight from './components/MenuHighlight.vue';
 import MenuPopover from './components/MenuPopover.vue';
 import PopoverContent from './components/PopoverContent.vue';
 import { usePopover } from './composables/usePopover';
 import { vTooltip } from './directives/v-tooltip';
 
 const popover = usePopover();
+const tour = ref();
 
 function openPopoverProgrammatically(event: MouseEvent) {
   popover.open(event, {
@@ -113,5 +145,9 @@ function openPopoverProgrammatically(event: MouseEvent) {
     displayDirective: 'show',
     closeOutside: false
   });
+}
+
+function openTour() {
+  tour.value?.open();
 }
 </script>

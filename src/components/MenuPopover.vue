@@ -14,8 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { arrow, autoUpdate, computePosition, flip, offset, shift, type ComputePositionConfig } from '@floating-ui/dom';
-import { computed, nextTick, onBeforeUnmount, provide, ref, useAttrs } from 'vue';
+import { arrow, autoUpdate, computePosition, inline, flip, offset, shift } from '@floating-ui/dom';
+import type { ComputePositionConfig } from '@floating-ui/dom';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, useAttrs } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 import type { Popover } from '../types/popover';
 import { toPx, transitionPopover } from '../utils';
@@ -35,7 +36,8 @@ const props = withDefaults(defineProps<Popover>(), {
   closeOutside: true,
   offset: 8,
   width: 350,
-  arrowSize: 15
+  arrowSize: 15,
+  isFlip: true
 });
 const attrs = useAttrs();
 
@@ -50,10 +52,10 @@ const arrowAxis = ref({
   x: 0,
   y: 0
 });
-const currentTarget = ref();
-const currentPlacement = ref(props.placement ?? 'bottom');
-const maxWidth = ref(props.width ? (typeof props.width === 'number' ? toPx(props.width) : props.width) : 350);
-const cleanup = ref<ReturnType<typeof autoUpdate>>();
+const currentTarget = shallowRef();
+const currentPlacement = shallowRef(props.placement ?? 'bottom');
+const maxWidth = shallowRef(props.width ? (typeof props.width === 'number' ? toPx(props.width) : props.width) : 350);
+const cleanup = shallowRef<ReturnType<typeof autoUpdate>>();
 
 const isFixed = computed(() => props.strategy === 'fixed');
 const transitionValue = computed(() => {
@@ -137,10 +139,22 @@ function getReference(value: MouseEvent | HTMLElement) {
  * Calculate max width floating
  */
 function calcMaxWidth() {
-  const currentWidth = props.width ? props.width : 350;
+  const maxContent = 'max-content';
+  const currentWidth = props.width ? props.width : maxContent;
+  const hasParentWidth = currentWidth === 'parent-width';
 
-  if (currentWidth === '100%' || currentWidth === 'max-content' || !currentWidth) {
-    return currentWidth === 'max-content' ? currentWidth : '100%';
+  if (
+    currentWidth === '100%' ||
+    currentWidth === maxContent ||
+    (hasParentWidth && !currentTarget.value) ||
+    (hasParentWidth && props.isContextMenu)
+  ) {
+    return currentWidth === maxContent || hasParentWidth ? maxContent : '100%';
+  }
+
+  if (hasParentWidth) {
+    const width = currentTarget.value?.getBoundingClientRect()?.width;
+    return width ? toPx(width) : maxContent;
   }
 
   const isMaxWindow = currentWidth > window.innerWidth;
@@ -172,7 +186,8 @@ async function update() {
     return;
   }
 
-  const middleware = [flip(), offset(props.offset), shift(props.shift), ...setupArrow()];
+  const flipMiddleware = props.isFlip ? [flip(props.flip)] : [];
+  const middleware = [...flipMiddleware, inline(props.inline), offset(props.offset), shift(props.shift), ...setupArrow()];
   const options: Partial<ComputePositionConfig> = {
     strategy: isFixed.value ? 'fixed' : 'absolute',
     placement: props.placement,
@@ -237,6 +252,19 @@ async function close() {
   isOpen.value = false;
 }
 
+function checkMounted() {
+  if (!props.showOnMounted || (props.showOnMounted && !props.target)) {
+    return;
+  }
+
+  const target = typeof props.target === 'string' ? document.querySelector(props.target) : props.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  open(target);
+}
+
 onClickOutside(floatingRef, (event) => {
   if (props.closeOutside && isOpen.value && event.target !== currentTarget.value) {
     close();
@@ -245,5 +273,6 @@ onClickOutside(floatingRef, (event) => {
 
 provide('close', close);
 defineExpose({ isOpen, open, close });
+onMounted(checkMounted);
 onBeforeUnmount(close);
 </script>

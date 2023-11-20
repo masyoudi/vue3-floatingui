@@ -1,4 +1,4 @@
-import type { InlineOptions, Placement, Strategy, OffsetOptions, ShiftOptions } from '@floating-ui/dom';
+import type { InlineOptions, Placement, FlipOptions, Strategy, OffsetOptions, ShiftOptions } from '@floating-ui/dom';
 import type { Component } from 'vue';
 
 export type PopoverPlacement = Placement;
@@ -10,6 +10,8 @@ export type PopoverOffset = OffsetOptions;
 export type PopoverShift = ShiftOptions;
 
 export type PopoverInline = InlineOptions;
+
+export type PopoverFlip = FlipOptions;
 
 export type PopoverTransition = {
   enterActiveClass: string;
@@ -24,15 +26,18 @@ export type Popover = {
   strategy?: PopoverStrategy;
   placement?: PopoverPlacement;
   displayDirective?: 'if' | 'show';
+  target?: string | HTMLElement;
+  showOnMounted?: boolean;
   isContextMenu?: boolean;
   closeOutside?: boolean;
-  flip?: boolean;
+  isFlip?: boolean;
+  flip?: PopoverFlip;
   shift?: PopoverShift;
   offset?: PopoverOffset;
   inline?: PopoverInline;
   transition?: string | PopoverTransition;
   contentClass?: string | string[];
-  width?: number | '100%' | 'max-content';
+  width?: number | '100%' | 'max-content' | 'parent-width';
   zIndex?: number;
   showArrow?: boolean;
   arrowClass?: string | string[];
