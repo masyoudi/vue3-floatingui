@@ -1,6 +1,6 @@
 import type { App } from 'vue';
 
-export const transitionPopover = {
+export const popoverTransition = {
   enterActiveClass: 'transition duration-150 ease-out',
   enterFromClass: 'transform scale-95 opacity-0',
   enterToClass: 'transform scale-100 opacity-100',

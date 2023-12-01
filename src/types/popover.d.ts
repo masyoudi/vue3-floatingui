@@ -30,7 +30,6 @@ export type Popover = {
   showOnMounted?: boolean;
   isContextMenu?: boolean;
   closeOutside?: boolean;
-  isFlip?: boolean;
   flip?: PopoverFlip;
   shift?: PopoverShift;
   offset?: PopoverOffset;
