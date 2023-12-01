@@ -14,12 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { arrow, autoUpdate, computePosition, inline, flip, offset, shift } from '@floating-ui/dom';
+import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 import type { ComputePositionConfig } from '@floating-ui/dom';
 import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, useAttrs } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 import type { Popover } from '../types/popover';
-import { toPx, transitionPopover } from '../utils';
+import { toPx, popoverTransition } from '../utils';
 
 defineOptions({
   inheritAttrs: false
@@ -30,14 +30,14 @@ const props = withDefaults(defineProps<Popover>(), {
   isContextMenu: false,
   displayDirective: 'if',
   showArrow: true,
-  shift: () => ({ padding: 15 }),
+  shift: () => ({ padding: 15, mainAxis: false }),
+  flip: () => ({}),
   arrowClass: 'bg-slate-200 z-1',
   contentClass: 'bg-white shadow-lg rounded-lg border border-slate-200/80 p-4',
   closeOutside: true,
   offset: 8,
   width: 350,
-  arrowSize: 15,
-  isFlip: true
+  arrowSize: 15
 });
 const attrs = useAttrs();
 
@@ -60,7 +60,7 @@ const cleanup = shallowRef<ReturnType<typeof autoUpdate>>();
 const isFixed = computed(() => props.strategy === 'fixed');
 const transitionValue = computed(() => {
   if (!props.transition) {
-    return transitionPopover;
+    return popoverTransition;
   }
   return typeof props.transition === 'string' ? { name: props.transition } : props.transition;
 });
@@ -119,7 +119,7 @@ function getReference(value: MouseEvent | HTMLElement) {
 
   const top = props.isContextMenu && !isFixed.value ? value.clientY - window.scrollY : value.clientY;
   const left = value.clientX;
-  const clientRect = {
+  const boundingRect = {
     width: 0,
     height: 0,
     y: top,
@@ -131,7 +131,7 @@ function getReference(value: MouseEvent | HTMLElement) {
   };
 
   return {
-    getBoundingClientRect: () => clientRect
+    getBoundingClientRect: () => boundingRect
   };
 }
 
@@ -167,15 +167,10 @@ function calcMaxWidth() {
  * Setup arrow middleware
  */
 function setupArrow() {
-  if (!isShowArrow.value) {
-    return [];
-  }
-
   const middleware = arrow(() => ({
     element: arrowRef.value
   }));
-
-  return [middleware];
+  return isShowArrow.value ? [middleware] : [];
 }
 
 /**
@@ -186,8 +181,8 @@ async function update() {
     return;
   }
 
-  const flipMiddleware = props.isFlip ? [flip(props.flip)] : [];
-  const middleware = [...flipMiddleware, inline(props.inline), offset(props.offset), shift(props.shift), ...setupArrow()];
+  const flipMiddleware = props.flip ? [flip(props.flip)] : [];
+  const middleware = [offset(props.offset), ...flipMiddleware, shift(props.shift), ...setupArrow()];
   const options: Partial<ComputePositionConfig> = {
     strategy: isFixed.value ? 'fixed' : 'absolute',
     placement: props.placement,
@@ -237,7 +232,9 @@ async function open(reference: MouseEvent | HTMLElement, keepOpenOnTarget: boole
 
   isOpen.value = true;
   await nextTick();
-  cleanup.value = autoUpdate(currentTarget.value, floatingRef.value, update);
+  cleanup.value = autoUpdate(currentTarget.value, floatingRef.value, update, {
+    ancestorScroll: false
+  });
 }
 
 /**

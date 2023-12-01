@@ -2,7 +2,7 @@
   <div>
     <Teleport to="body">
       <Transition v-bind="transition">
-        <div v-if="isOpen" ref="mask" class="fixed rounded-lg z-[100]"></div>
+        <div v-if="isOpen" ref="mask" :class="[step.strategy, 'rounded-lg z-[100] transition']"></div>
       </Transition>
       <div v-if="isOpen" class="fixed inset-0 z-[100]"></div>
     </Teleport>
@@ -13,8 +13,9 @@
       :z-index="101"
       class="bg-slate-900 rounded-lg p-4"
       arrow-class="bg-slate-900"
-      strategy="fixed"
+      :strategy="step.strategy"
       :close-outside="false"
+      :shift="{ padding: 10, mainAxis: true }"
       :offset="15"
       show-on-mounted
     >
@@ -45,6 +46,14 @@ interface Step {
   strategy: Strategy;
 }
 
+interface Props {
+  background?: string;
+  steps?: Step[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  background: 'rgba(0, 0, 0, .5)'
+});
 const mask = shallowRef<HTMLElement>();
 const transition = {
   enterActiveClass: 'transition duration-150 ease-out',
@@ -99,10 +108,10 @@ const setMask = async (target: Element) => {
 
   const { x, y } = await computePosition(target, mask.value, {
     placement: 'top-start',
-    strategy: 'fixed'
+    strategy: step.value.strategy
   });
-  const { screen } = window;
   const { body } = document;
+  const { screen } = window;
   const { width, height } = target.getBoundingClientRect();
   const shadowWidth = screen.width > body.scrollHeight ? screen.width : body.scrollHeight;
   const padding = 5;
@@ -111,7 +120,7 @@ const setMask = async (target: Element) => {
   mask.value.style.height = toPx(padding * 2 + height);
   mask.value.style.top = toPx(y + height + padding);
   mask.value.style.left = toPx(x - padding);
-  mask.value.style.boxShadow = `0 0 0 ${toPx(shadowWidth)} rgba(0, 0, 0, .5)`;
+  mask.value.style.boxShadow = `0 0 0 ${toPx(shadowWidth)} ${props.background}`;
   mask.value.style.background = 'transparent';
 };
 
@@ -134,7 +143,7 @@ async function update(index: number) {
     return;
   }
 
-  mask.value.style.background = 'rgba(0, 0, 0, .5)';
+  mask.value.style.background = props.background;
   await scrollIntoView(target, { behavior: 'smooth', block: 'center', inline: 'nearest' });
   cleanup.value = autoUpdate(target, mask.value, async () => await setMask(target));
   await nextTick();

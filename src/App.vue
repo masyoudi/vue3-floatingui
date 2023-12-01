@@ -7,9 +7,14 @@
     </div>
     <div class="relative mb-10">
       <p>
-        Lorem <span v-tooltip="'Inline tooltip'" class="font-semibold">Inline</span> dolor sit amet consectetur adipisicing elit. Quis expedita at modi
-        quidem! Beatae, voluptas. Rem, laborum quidem. Aliquam assumenda eos eligendi. Assumenda inventore sint repellat, a esse
-        temporibus repudiandae.
+        Lorem
+        <a
+          v-tooltip="{ content: 'Inline tooltip', placement: 'top', offset: 5, always: true }"
+          class="font-semibold text-red-500"
+          >Inline</a
+        >
+        dolor sit amet consectetur adipisicing elit. Quis expedita at modi quidem! Beatae, voluptas. Rem, laborum quidem. Aliquam
+        assumenda eos eligendi. Assumenda inventore sint repellat, a esse temporibus repudiandae.
       </p>
     </div>
     <MenuPopover
@@ -35,7 +40,7 @@
       </template>
     </MenuPopover>
 
-    <MenuPopover strategy="fixed" :width="1000" is-context-menu :show-arrow="false">
+    <MenuPopover strategy="fixed" placement="left" :width="1000" is-context-menu :show-arrow="false">
       <template #default="{ open }">
         <div
           class="fixed bottom-10 left-8 md:left-[50%] lg:left-[80%] right-5 border select-none bg-white rounded-xl p-4 mb-8 z-10 z-10"
@@ -114,7 +119,7 @@
         class="inline-flex justify-center items-center bg-slate-500 text-white rounded-lg px-4 py-2"
         v-tooltip="{
           content: 'Text content',
-          contentClass: 'bg-emerald-500 text-white px-2 py-0.5 text-sm rounded-md',
+          contentClass: 'bg-emerald-500 text-white px-2 py-0.5 text-xs rounded-md',
           arrowClass: 'bg-emerald-500',
           always: true
         }"
