@@ -119,7 +119,7 @@
         class="inline-flex justify-center items-center bg-slate-500 text-white rounded-lg px-4 py-2"
         v-tooltip="{
           content: 'Text content',
-          contentClass: 'bg-emerald-500 text-white px-2 py-0.5 text-sm rounded-md',
+          contentClass: 'bg-emerald-500 text-white px-2 py-0.5 text-xs rounded-md',
           arrowClass: 'bg-emerald-500',
           always: true
         }"
